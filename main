@@ -5,28 +5,38 @@
 set -x
 set -e
 
+#####################################################################################
+#####################################################################################
 #write out *plugin* configuration for fmriprep to limit mem/cpus
 #this can't prevent the fmriprep/nipype bootup vmem spiking (could kill the job)
+#but it seems to help...
 cat <<EOF > multi_proc.yml
 plugin: LegacyMultiProc
 plugin_args: {maxtasksperchild: 1, memory_gb: 14, n_procs: 8, raise_insufficient: false}
 EOF
 
+################################################################################
+# help writing files
 source bids_funcs.sh
+
+################################################################################
 
 WORKDIRNAME=fmripworkdir
 outdir=fmripout
 INDIRNAME=fmripinput
 
 # manually change "subject" in config.json to "TTTEMPSUB" to work with fMRIPrep
-
+# this allows us better control of the temp bids dir we make
 cat config.json | jq '._inputs[].meta.subject="TTTEMPSUB"' > tmp1.json
 cat tmp1.json | jq '._inputs[].meta.session="SSSES"' > tmp2.json
 cat tmp2.json | jq '._inputs[].meta.run="1"' > tmp3.json
-
 mv tmp3.json config.json 
 
-################################################################################
+# remove trash
+ls tmp?.json && rm tmp?.json
+
+#####################################################################################
+#####################################################################################
 # read input from config.json
 # starting off with basic options here
 
@@ -35,52 +45,21 @@ inT2w=`jq -r '.t2' config.json`
 inFMRI=`jq -r '.fmri' config.json`
 inFSDIR=`jq -r '.fsin' config.json`
 
-# templates to be resampled to
-#templates_bool=(`jq -r '.["T1w:res-2"], .["MNI152NLin2009cAsym"], .["fsaverage:den-10k"]' config.json`)
-#template_names=("T1w:res-2" "MNI152NLin2009cAsym" "fsaverage:den-10k")
-#outTEMPLATES="T1w MNI152NLin2009cAsym:res-2" # T1w and MNI152NLin2009cAsym:res-2 are required
-#for i in {0..2}
-#  do if ${templates_bool[$i]}; then
-#    outTEMPLATES=$(echo "$outTEMPLATES" "${template_names[$i]}")
-#  fi
-#done
+space=$(jq -r .space config.json)
+space_optkey="--output-spaces"
+#some template can only be specified via deprecated cli option
+if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
+    space_optkey="--output-space"
+fi
 
-#https://fmriprep.readthedocs.io/en/stable/usage.html
-#Standard and non-standard spaces to resample anatomical and functional images to. 
-#Standard spaces may be specified by the form <TEMPLATE>[:res-<resolution>][:cohort-<label>][...], 
-#   where <TEMPLATE> is a keyword (valid keywords: 
-#   “MNI152Lin”, 
-#   “MNI152NLin2009cAsym”, 
-#   “MNI152NLin6Asym”, 
-#   “MNI152NLin6Sym”, 
-#   “MNIInfant”, 
-#   “MNIPediatricAsym”, 
-#   “NKI”, 
-#   “OASIS30ANTs”, 
-#   “PNC”, 
-#   “fsLR”, 
-#   “fsaverage”
-#) or path pointing to a user-supplied template, and may be followed by optional, colon-separated parameters. 
-#Non-standard spaces (valid keywords: 
-#   anat, 
-#   T1w, 
-#   run, 
-#   func, 
-#   sbref, 
-#   fsnative) 
-#imply specific orientations and sampling grids. Important to note, the res-* modifier does not define the resolution used for the spatial normalization. For further details, please check out https://fmriprep.readthedocs.io/en/1.5.0/spaces.html
+output_space=$space
+resolution=$(jq -r .resolution config.json)
+if [ $resolution != "original" ];then
+    output_space=$space:$resolution
+fi
 
-#https://github.com/templateflow/templateflow
-#spaces=""
-#$(jq -r .space_t1w config.json) && spaces="$spaces anat"
-#$(jq -r .space_t1w_res2 config.json) && spaces="$spaces T1w:res-2"
-#$(jq -r .space_mni152_res2 config.json) && spaces="$spaces MNI152NLin2009cAsym:res-2"
-#$(jq -r .space_mni152_2009c config.json) && spaces="$spaces MNI152NLin2009cAsym"
-#$(jq -r .space_fsaverage_den10k config.json) && spaces="$spaces fsaverage:den-10k"
-
-# manually set spaces!
-#spaces="MNI152NLin2009cAsym:res-2 fsaverage5"
-
+#####################################################################################
+#####################################################################################
 # some logical checks
 if [[ $inT1w = "null" ]] || [[ $inFMRI = "null" ]] ; then
 	echo "app needs minimally a T1w and fmri. exiting"
@@ -103,9 +82,11 @@ blJSON=t1w.json
 bidsSub="sub-TTTEMPSUB"
 ses="SSSES"
 
-################################################################################
+#####################################################################################
+#####################################################################################
 # setup bids dir structure
 
+# remove if stuff already exists
 rm -rf $INDIRNAME && mkdir -p $INDIRNAME
 rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
 rm -rf $outdir && mkdir -p $outdir
@@ -130,6 +111,8 @@ if [[ $inFSDIR != "null" ]] ; then
 	fi
 fi
 
+################################################################################
+# make this for bids spec
 cat > $bidsDir/dataset_description.json << 'BIDSDESCRIPT'
 {
     "Name": "temp",
@@ -139,7 +122,6 @@ BIDSDESCRIPT
 
 ################################################################################
 # T1w 
-
 mkdir -p $bidsSubSesDir/anat
 blJSON_T1w=t1w.json
 name_T1w=$bidsSubSesDir/anat/$bidsSub
@@ -150,7 +132,6 @@ bids_phaseencode_check ${name_T1w}_T1w.json
 
 ################################################################################
 # T2w 
-
 if [[ $inT2w != "null" ]] ; then
 	jq '._inputs[] | select(.id == "t2w")' config.json > t2w.json
 	blJSON_T2w=t2w.json
@@ -163,9 +144,7 @@ fi
 
 ################################################################################
 # FMRI
-
 if [[ $inFMRI != "null" ]] ; then
-
 	mkdir -p $bidsSubSesDir/func
 	jq '._inputs[] | select(.id == "fmri")' config.json > fmri.json
 	blJSON_FMRI=fmri.json
@@ -177,7 +156,6 @@ if [[ $inFMRI != "null" ]] ; then
 	bids_phaseencode_check ${name_FMRI}_bold.json 
 
 fi
-
 ################################################################################
 #
 # FMAP
@@ -272,6 +250,8 @@ fmap_bids_dir=$bidsSubSesDir/fmap
 name_FMAP=$fmap_bids_dir/$bidsSub
 name_FMAP=$(bids_namekeyvals $name_FMAP fmap.json "acq run" $ses )
 
+#####################################################################################
+#####################################################################################
 #do we really have fmap input?
 if [ $fieldmap_path != "null" ]; then
 	mkdir -p $fmap_bids_dir
@@ -404,29 +384,17 @@ fi
 #
 #fi
 
-###################################################################################################
-#
-# run fmriprep!
-#
+#####################################################################################
+#####################################################################################
+# RUN IT
 
+# avoid templateflow problems on HPC's running singularity
 mkdir -p templateflow
 export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 
+# set FreeSurfer
 [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
 echo $FREESURFER_LICENSE > license.txt
-
-space=$(jq -r .space config.json)
-space_optkey="--output-spaces"
-#some template can only be specified via deprecated cli option
-if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
-    space_optkey="--output-space"
-fi
-
-output_space=$space
-resolution=$(jq -r .resolution config.json)
-if [ $resolution != "original" ];then
-    output_space=$space:$resolution
-fi
 
 time singularity exec \
     -e -B $(pwd)/run.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/cli/run.py \
@@ -450,11 +418,12 @@ time singularity exec \
 echo "done with fmriprep! - now organizing output"
 
 #####################################################################################
-#
-# reorganize output
-#
+#####################################################################################
+# reorganize outputs
 
+####################
 ### bold outputs ###
+####################
 
 # get basename
 inFMRI=${name_FMRI}_bold.nii.gz
@@ -463,38 +432,47 @@ outBase="$oDirFunc/$(basename $(echo $inFMRI | sed s,_bold.nii.gz,, ))"
 
 # first of all, get the confounds
 tmp=${outBase}_desc-confounds_regressors.tsv
-mkdir -p output_regress
-mv -v $tmp output_regress/regressors.tsv
+mkdir -p regress
+mv -v $tmp regress/regressors.tsv
 
-# T1w space
-# get the preproc fmri vol
-tmp=${outBase}_space-${space}_desc-preproc_bold.nii.gz
-mkdir -p output_bold
-mv -v $tmp output_bold/bold.nii.gz
+tmp=${outBase}_desc-confounds_regressors.json
+if [[ -e $tmp ]] ; then
+    mv -v tmp regress/regressors.json
+fi 
 
-# get the preproc fmri volmask
-tmp=${outBase}_space-${space}_desc-brain_mask.nii.gz
-mkdir -p output_boldmask
-mv -v $tmp output_boldmask/mask.nii.gz
+# need to check if we have surface or volume output,
+# this will match for fsaverage, fsaverage5, ...
+if [[ ${output_space} =~ 'fsaverage' ]] ; then
 
-# MNI-res2 space
-#tmp=${outBase}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
-#mkdir -p output_boldMNI
-#mv -v $tmp output_boldMNI/bold.nii.gz
+    # fsaverage (for the future)
+    mkdir -p bold_img
+    tmp=${outBase}_space-fsaverage5_hemi-L.func.gii
+    mv -v $tmp bold_img/func.L.gii
+    tmp=${outBase}_space-fsaverage5_hemi-R.func.gii
+    mv -v $tmp bold_img/func.R.gii
 
-# get the preproc fmri volmask
-#tmp=${outBase}_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz
-#mkdir -p output_boldmaskMNI
-#mv -v $tmp output_boldmaskMNI/mask.nii.gz
+    # VOLUME mask does not exist for surface...
+    # so just touch an empty file?
+    mkdir -p bold_mask
+    touch bold_mask/mask.nii.gz
 
-# fsaverage (for the future)
-#mkdir -p output_boldfsaverage
-#tmp=${outBase}_space-fsaverage5_hemi-L.func.gii
-#mv -v $tmp output_boldMNI/bold-L.func.gii
-#tmp=${outBase}_space-fsaverage5_hemi-R.func.gii
-#mv -v $tmp output_boldMNI/bold-R.func.gii
+else # else its a volume space
 
+    # get the preproc fmri vol
+    tmp=${outBase}_space-${space}_desc-preproc_bold.nii.gz
+    mkdir -p bold_img
+    mv -v $tmp bold_img/bold.nii.gz
+
+    # get the preproc fmri volmask
+    tmp=${outBase}_space-${space}_desc-brain_mask.nii.gz
+    mkdir -p bold_mask
+    mv -v $tmp bold_mask/mask.nii.gz
+
+fi
+
+###################
 ### T1w outputs ###
+###################
 
 #inT1w=${name_T1w}_T1w.nii.gz
 oDirAnat=$outdir/fmriprep/$bidsSub/anat/
@@ -502,12 +480,16 @@ outBase=$oDirAnat/$bidsSub
 
 # get the preproc t1w vol
 tmp=${outBase}_desc-preproc_T1w.nii.gz
-mkdir -p output_t1
-mv -v $tmp output_t1/t1.nii.gz
+mkdir -p anat
+mv -v $tmp anat/t1.nii.gz
 
 tmp=${outBase}_desc-brain_mask.nii.gz
-mkdir -p output_t1mask
-mv -v $tmp output_t1mask/mask.nii.gz
+mkdir -p anat_mask
+mv -v $tmp anat_mask/mask.nii.gz
+
+##################
+### reportlets ###
+##################
 
 mkdir -p output_report
 html=$(cd $outdir && find ./ -name "*.html")
@@ -534,7 +516,10 @@ cat << EOF > product.json
 }
 EOF
 
-# save lots of space (now that we aren't capturing raw output, I don't think this is necessary)
-#rm -r $WORKDIRNAME
+#####################################################################################
+#####################################################################################
+
+# save lots of space
+rm -r $WORKDIRNAME
 
 echo "all done"
