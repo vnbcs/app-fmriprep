@@ -56,13 +56,13 @@ output_space=$space
 
 #for volume output
 resolution=$(jq -r .resolution config.json)
-if [ $resolution != "original" ];then
+if [ $resolution != "original" ] && [ $resolution != "null" ] ;then
     output_space=$space:$resolution
 fi
 
 #for surface output
 density=$(jq -r .density config.json)
-if [ $density != "original" ];then
+if [ $density != "original" ] && [ $density != "null" ] ;then
     output_space=$space:$density
 fi
 
