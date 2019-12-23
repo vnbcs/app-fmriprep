@@ -86,7 +86,6 @@ if [[ $stagingDir = "." ]]; then
 fi
 
 jq '._inputs[] | select(.id == "t1w")' config.json > t1w.json
-blJSON=t1w.json
 bidsSub="sub-TTTEMPSUB"
 ses="SSSES"
 
@@ -131,22 +130,20 @@ BIDSDESCRIPT
 ################################################################################
 # T1w 
 mkdir -p $bidsSubSesDir/anat
-blJSON_T1w=t1w.json
 name_T1w=$bidsSubSesDir/anat/$bidsSub
-name_T1w=$(bids_namekeyvals $name_T1w $blJSON_T1w "acq ce rec run" $ses )
+name_T1w=$(bids_namekeyvals $name_T1w t1w.json "acq ce rec run" $ses )
 cp $inT1w ${name_T1w}_T1w.nii.gz
-jq -r ".meta" $blJSON_T1w > ${name_T1w}_T1w.json
+jq -r ".meta" t1w.json > ${name_T1w}_T1w.json
 bids_phaseencode_check ${name_T1w}_T1w.json
 
 ################################################################################
 # T2w 
 if [[ $inT2w != "null" ]] ; then
 	jq '._inputs[] | select(.id == "t2w")' config.json > t2w.json
-	blJSON_T2w=t2w.json
 	name_T2w=$bidsSubSesDir/anat/$bidsSub
-	name_T2w=$(bids_namekeyvals $name_T2w $blJSON_T2w "acq ce rec run" $ses )
+	name_T2w=$(bids_namekeyvals $name_T2w t2w.json "acq ce rec run" $ses )
 	cp $inT2w ${name_T2w}_T2w.nii.gz
-	jq -r ".meta" $blJSON_T2w > ${name_T2w}_T2w.json
+	jq -r ".meta" t2w.json > ${name_T2w}_T2w.json
 	bids_phaseencode_check ${name_T2w}_T2w.json 
 fi
 
@@ -155,12 +152,11 @@ fi
 if [[ $inFMRI != "null" ]] ; then
 	mkdir -p $bidsSubSesDir/func
 	jq '._inputs[] | select(.id == "fmri")' config.json > fmri.json
-	blJSON_FMRI=fmri.json
 	# fmri needs task in the filename to be defined!
 	name_FMRI=$bidsSubSesDir/func/$bidsSub
-	name_FMRI=$(bids_namekeyvals $name_FMRI $blJSON_FMRI "task acq ce dir rec run echo" $ses )
+	name_FMRI=$(bids_namekeyvals $name_FMRI fmri.json "task acq ce dir rec run echo" $ses )
 	cp $inFMRI ${name_FMRI}_bold.nii.gz
-	jq -r ".meta" $blJSON_FMRI > ${name_FMRI}_bold.json
+	jq -r ".meta" fmri.json > ${name_FMRI}_bold.json
 	bids_phaseencode_check ${name_FMRI}_bold.json 
 
 fi
@@ -252,6 +248,7 @@ fi
 #    JSON file should be used.
 
 relFMRI=$(echo ${name_FMRI}_bold.nii.gz | sed 's,.*/func/,func/,')
+
 fieldmap_path=$(jq -r .fieldmap config.json)
 fmap_in_dir=`dirname $fieldmap_path`
 fmap_bids_dir=$bidsSubSesDir/fmap
