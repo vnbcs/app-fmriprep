@@ -445,7 +445,7 @@ mv -v $tmp regress/regressors.tsv
 
 tmp=${outBase}_desc-confounds_regressors.json
 if [[ -e $tmp ]] ; then
-    mv -v tmp regress/regressors.json
+    mv -v $tmp regress/regressors.json
 fi 
 
 # need to check if we have surface or volume output,
