@@ -451,9 +451,9 @@ if [[ $space =~ 'fsaverage' ]] ; then
 
     # fsaverage (for the future)
     mkdir -p surface
-    tmp=${outBase}_space-fsaverage5_hemi-L.func.gii
+    tmp=${outBase}_space-${space}_hemi-L.func.gii
     mv -v $tmp surface/func.L.gii
-    tmp=${outBase}_space-fsaverage5_hemi-R.func.gii
+    tmp=${outBase}_space-${space}_hemi-R.func.gii
     mv -v $tmp surface/func.R.gii
 
 else # else its a volume space
