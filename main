@@ -53,9 +53,17 @@ if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
 fi
 
 output_space=$space
+
+#for volume output
 resolution=$(jq -r .resolution config.json)
 if [ $resolution != "original" ];then
     output_space=$space:$resolution
+fi
+
+#for surface output
+density=$(jq -r .density config.json)
+if [ $density != "original" ];then
+    output_space=$space:$density
 fi
 
 #####################################################################################
@@ -442,19 +450,14 @@ fi
 
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
-if [[ ${output_space} =~ 'fsaverage' ]] ; then
+if [[ $space =~ 'fsaverage' ]] ; then
 
     # fsaverage (for the future)
-    mkdir -p bold_img
+    mkdir -p surface
     tmp=${outBase}_space-fsaverage5_hemi-L.func.gii
-    mv -v $tmp bold_img/func.L.gii
+    mv -v $tmp surface/func.L.gii
     tmp=${outBase}_space-fsaverage5_hemi-R.func.gii
-    mv -v $tmp bold_img/func.R.gii
-
-    # VOLUME mask does not exist for surface...
-    # so just touch an empty file?
-    mkdir -p bold_mask
-    touch bold_mask/mask.nii.gz
+    mv -v $tmp surface/func.R.gii
 
 else # else its a volume space
 
