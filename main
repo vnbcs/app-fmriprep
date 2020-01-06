@@ -47,6 +47,7 @@ inFSDIR=`jq -r '.fsin' config.json`
 
 space=$(jq -r .space config.json)
 space_optkey="--output-spaces"
+
 #some template can only be specified via deprecated cli option
 if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
     space_optkey="--output-space"
@@ -60,11 +61,13 @@ if [ $resolution != "original" ] && [ $resolution != "null" ] ;then
     output_space=$space:$resolution
 fi
 
+
+#TODO - doesn't work?
 #for surface output
-density=$(jq -r .density config.json)
-if [ $density != "original" ] && [ $density != "null" ] ;then
-    output_space=$space:$density
-fi
+#density=$(jq -r .density config.json)
+#if [ $density != "original" ] && [ $density != "null" ] ;then
+#    output_space=$space:$density
+#fi
 
 #####################################################################################
 #####################################################################################
@@ -401,9 +404,9 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
 echo $FREESURFER_LICENSE > license.txt
 
+#-e -B $(pwd)/run.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/cli/run.py \
 time singularity exec \
-    -e -B $(pwd)/run.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/cli/run.py \
-    docker://poldracklab/fmriprep:1.5.2 \
+    docker://poldracklab/fmriprep:1.5.4 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
@@ -411,14 +414,16 @@ time singularity exec \
     --md-only-boilerplate \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
-    $space_optkey $output_space \
+    $space_optkey $output_space MNI152NLin2009cAsym \
     --force-bbr \
     --use-syn-sdc \
     --fs-license-file=license.txt \
+    --fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
-    --participant_label=$bidsSub \
+    --participant_label="$bidsSub" \
     $bidsDir $outdir participant
+
 
 echo "done with fmriprep! - now organizing output"
 
