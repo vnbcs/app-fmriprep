@@ -61,13 +61,11 @@ if [ $resolution != "original" ] && [ $resolution != "null" ] ;then
     output_space=$space:$resolution
 fi
 
-
-#TODO - doesn't work?
 #for surface output
-#density=$(jq -r .density config.json)
-#if [ $density != "original" ] && [ $density != "null" ] ;then
-#    output_space=$space:$density
-#fi
+density=$(jq -r .density config.json)
+if [ $density != "original" ] && [ $density != "null" ] ;then
+    output_space=$space:$density
+fi
 
 #####################################################################################
 #####################################################################################

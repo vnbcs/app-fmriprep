@@ -1,0 +1,1 @@
+rm -rf anat/ anat_mask/ bold_img/ bold_mask/ fmap.json fmri.json fmripinput/ fmripout/ fmripworkdir/ license.txt multi_proc.yml nohup.out output_report/ product.json regress/ t1w.json t2w.json templateflow fmripoutput/
