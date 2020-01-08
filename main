@@ -46,12 +46,12 @@ inFMRI=`jq -r '.fmri' config.json`
 inFSDIR=`jq -r '.fsin' config.json`
 
 space=$(jq -r .space config.json)
-space_optkey="--output-spaces"
+#space_optkey="--output-spaces"
 
 #some template can only be specified via deprecated cli option
-if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
-    space_optkey="--output-space"
-fi
+#if [ $space == "T1w" ] || [ $space == "fsaverage" ] ; then
+#    space_optkey="--output-space"
+#fi
 
 output_space=$space
 
@@ -414,9 +414,10 @@ time singularity exec \
     --md-only-boilerplate \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
-    $space_optkey $output_space MNI152NLin2009cAsym \
+    --output-spaces $output_space MNI152NLin2009cAsym \
     --force-bbr \
     --use-syn-sdc \
+    --fs-no-reconall \
     --fs-license-file=license.txt \
     --fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
     --skull-strip-template=NKI \
