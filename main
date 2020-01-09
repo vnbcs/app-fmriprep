@@ -403,7 +403,7 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 echo $FREESURFER_LICENSE > license.txt
 
 #-e -B $(pwd)/run.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/cli/run.py \
-time singularity exec \
+time singularity exec -e \
     docker://poldracklab/fmriprep:1.5.4 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
@@ -412,7 +412,7 @@ time singularity exec \
     --md-only-boilerplate \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
-    --output-spaces $output_space MNI152NLin2009cAsym \
+    --output-spaces $output_space \
     --force-bbr \
     --use-syn-sdc \
     --fs-no-reconall \
@@ -423,6 +423,7 @@ time singularity exec \
     --participant_label="$bidsSub" \
     $bidsDir $outdir participant
 
+#--output-spaces $output_space MNI152NLin2009cAsym \
 
 echo "done with fmriprep! - now organizing output"
 
