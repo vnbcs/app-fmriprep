@@ -61,11 +61,13 @@ if [ $resolution != "original" ] && [ $resolution != "null" ] ;then
     output_space=$space:$resolution
 fi
 
+# @mgxd says density doesn't work?
+# https://github.com/poldracklab/fmriprep/issues/1921#issuecomment-573847401
 #for surface output
-density=$(jq -r .density config.json)
-if [ $density != "original" ] && [ $density != "null" ] ;then
-    output_space=$space:$density
-fi
+#density=$(jq -r .density config.json)
+#if [ $density != "original" ] && [ $density != "null" ] ;then
+#    output_space=$space:$density
+#fi
 
 #####################################################################################
 #####################################################################################
@@ -402,8 +404,8 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
 echo $FREESURFER_LICENSE > license.txt
 
-#-e -B $(pwd)/run.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/cli/run.py \
 time singularity exec -e \
+    -B $(pwd)/base.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/workflows/bold/base.py \
     docker://poldracklab/fmriprep:1.5.4 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
@@ -412,17 +414,18 @@ time singularity exec -e \
     --md-only-boilerplate \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
-    --output-spaces $output_space \
+    --output-spaces $output_space MNI152NLin2009cAsym \
     --force-bbr \
     --use-syn-sdc \
-    --fs-no-reconall \
     --fs-license-file=license.txt \
-    --fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
     --participant_label="$bidsSub" \
     $bidsDir $outdir participant
 
+#--fs-no-reconall \
+#--fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
+#--fs-subjects-dir="$outdir/freesurfer" \
 #--output-spaces $output_space MNI152NLin2009cAsym \
 
 echo "done with fmriprep! - now organizing output"
