@@ -455,7 +455,7 @@ fi
 
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
-if [[ $space =~ 'fsaverage' ]] ; then
+if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] or ; then
 
     # fsaverage (for the future)
     mkdir -p surface
