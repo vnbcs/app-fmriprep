@@ -405,8 +405,7 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 echo $FREESURFER_LICENSE > license.txt
 
 time singularity exec -e \
-    -B $(pwd)/base.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/workflows/bold/base.py \
-    docker://poldracklab/fmriprep:1.5.4 \
+    docker://poldracklab/fmriprep:1.5.5 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
@@ -427,6 +426,7 @@ time singularity exec -e \
 #--fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
 #--fs-subjects-dir="$outdir/freesurfer" \
 #--output-spaces $output_space MNI152NLin2009cAsym \
+#-B $(pwd)/base.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/workflows/bold/base.py \
 
 echo "done with fmriprep! - now organizing output"
 
