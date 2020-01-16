@@ -455,9 +455,8 @@ fi
 
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
-product_surface=""
+product=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
-
     # fsaverage (for the future)
     mkdir -p surface
     tmp=${outBase}_space-${space}_hemi-L.func.gii
@@ -466,15 +465,16 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mv -v $tmp surface/R.func.gii
 
     if [[ $space =~ 'fsaverage' ]] ; then
-        product_surface="\"output_surface\": { \"meta]\": [ \"SurfaceType\": \"$space\" ] },"
+        product="\"surface\": { \"meta\": [ \"Space\": \"$space\" ], \"tags\": [ \"space-$space\"] },"
     fi
     if [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
-        product_surface="\"output_surface\": { \"meta]\": [ \"SurfaceType\": \"fsnative\" ] },"
+        product="\"surface\": { \"meta\": [ \"Space\": \"native\" ], \"tag\": [ \"space-native\" ] },"
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
     fi
 
-else # else its a volume space
+else # else its a volume(bold) output
+    product="\"bold_img\": {\"meta\": [\"Space\": \"$space\"], \"tags\": [ \"space-$space\" ]},"
 
     # get the preproc fmri vol
     tmp=${outBase}_space-${space}_desc-preproc_bold.nii.gz
@@ -520,14 +520,12 @@ done
 
 cat << EOF > product.json
 {
-    "output_bold": {
-        "tags": [ "space-$space" ]
-    },
-    $product_surface
+    $product
     "brainlife": [
         {
             "type": "html",
             "name": "fmriprep report (todo)",
+            "desc": "we could show the content of the html report here",
             "path": "output_report"
         }
     ]
