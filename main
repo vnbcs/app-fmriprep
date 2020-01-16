@@ -465,16 +465,16 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mv -v $tmp surface/R.func.gii
 
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"surface\": { \"meta\": [ \"Space\": \"$space\" ], \"tags\": [ \"space-$space\"] },"
+        product="\"surface\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
     fi
     if [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
-        product="\"surface\": { \"meta\": [ \"Space\": \"native\" ], \"tag\": [ \"space-native\" ] },"
+        product="\"surface\": { \"meta\": { \"Space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
     fi
 
 else # else its a volume(bold) output
-    product="\"bold_img\": {\"meta\": [\"Space\": \"$space\"], \"tags\": [ \"space-$space\" ]},"
+    product="\"bold_img\": {\"meta\": {\"Space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
 
     # get the preproc fmri vol
     tmp=${outBase}_space-${space}_desc-preproc_bold.nii.gz
