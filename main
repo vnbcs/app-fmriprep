@@ -455,14 +455,24 @@ fi
 
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
+product_surface=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
 
     # fsaverage (for the future)
     mkdir -p surface
     tmp=${outBase}_space-${space}_hemi-L.func.gii
-    mv -v $tmp surface/func.L.gii
+    mv -v $tmp surface/L.func.gii
     tmp=${outBase}_space-${space}_hemi-R.func.gii
-    mv -v $tmp surface/func.R.gii
+    mv -v $tmp surface/R.func.gii
+
+    if [[ $space =~ 'fsaverage' ]] ; then
+        product_surface="\"output_surface\": { \"meta]\": [ \"SurfaceType\": \"$space\" ] },"
+    fi
+    if [[ $space == 'fsnative' ]] ; then
+        #convert some freesurfer surfaces to gii
+        product_surface="\"output_surface\": { \"meta]\": [ \"SurfaceType\": \"fsnative\" ] },"
+        time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
+    fi
 
 else # else its a volume space
 
@@ -513,7 +523,7 @@ cat << EOF > product.json
     "output_bold": {
         "tags": [ "space-$space" ]
     },
-
+    $product_surface
     "brainlife": [
         {
             "type": "html",
