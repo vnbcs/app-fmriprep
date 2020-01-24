@@ -458,18 +458,21 @@ fi
 product=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     # fsaverage (for the future)
-    mkdir -p surface
+    mkdir -p surface_left surface_right
     tmp=${outBase}_space-${space}_hemi-L.func.gii
-    mv -v $tmp surface/L.func.gii
+    mv -v $tmp surface_left/data.gii
     tmp=${outBase}_space-${space}_hemi-R.func.gii
-    mv -v $tmp surface/R.func.gii
+    mv -v $tmp surface_right/data.gii
 
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"surface\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
+        product="\"surface_left\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
+        product="\"surface_right\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
     fi
     if [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
-        product="\"surface\": { \"meta\": { \"Space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
+        product="\"surface_left\": { \"meta\": { \"Space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
+        product="\"surface_right\": { \"meta\": { \"Space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
+
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
     fi
 
