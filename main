@@ -518,6 +518,7 @@ for dir in $(cd $outdir && find ./ -name figures); do
     mkdir -p output_report/$(dirname $dir)
     cp -r $outdir/$dir output_report/$(dirname $dir)
 done
+mv output_report/fmriprep output_report/html #rename the parent directory to confirm to brainlife html output
 
 cat << EOF > product.json
 {
