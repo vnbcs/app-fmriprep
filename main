@@ -112,13 +112,8 @@ mkdir -p $bidsSubSesDir
 if [[ $inFSDIR != "null" ]] ; then
 
 	mkdir -p $outdir/freesurfer
-
-	# dont know if dir will be just inFSDIR or inFSDIR/output
-	if [[ -d $inFSDIR/output ]] ; then
-		cp -r $inFSDIR/output $outdir/freesurfer/$bidsSub
-	else
-		cp -r $inFSDIR $outdir/freesurfer/$bidsSub
-	fi
+    cp -r $inFSDIR $outdir/freesurfer/$bidsSub
+    chmod -R +rw $outdir/freesurfer
 fi
 
 ################################################################################
