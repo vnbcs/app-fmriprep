@@ -159,7 +159,9 @@ if [[ $inFMRI != "null" ]] ; then
 	name_FMRI=$bidsSubSesDir/func/$bidsSub
 	name_FMRI=$(bids_namekeyvals $name_FMRI fmri.json "task acq ce dir rec run echo" $ses )
 	cp $inFMRI ${name_FMRI}_bold.nii.gz
-	jq -r ".meta" fmri.json > ${name_FMRI}_bold.json
+    #temporarily removing datataype field from meta as we used to copy all nifti headers
+    #into meta and it was colliding with BIDS datatype field
+	jq -r '.meta | del(.["datatype"])' fmri.json > ${name_FMRI}_bold.json
 	bids_phaseencode_check ${name_FMRI}_bold.json 
 
 fi
@@ -405,7 +407,7 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 echo $FREESURFER_LICENSE > license.txt
 
 time singularity exec -e \
-    docker://poldracklab/fmriprep:1.5.5 \
+    docker://poldracklab/fmriprep:1.5.10 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
@@ -421,12 +423,6 @@ time singularity exec -e \
     --work-dir=$WORKDIRNAME \
     --participant_label="$bidsSub" \
     $bidsDir $outdir participant
-
-#--fs-no-reconall \
-#--fs-subjects-dir="$outdir/freesurfer/$bidsSub" \
-#--fs-subjects-dir="$outdir/freesurfer" \
-#--output-spaces $output_space MNI152NLin2009cAsym \
-#-B $(pwd)/base.py:/usr/local/miniconda/lib/python3.7/site-packages/fmriprep/workflows/bold/base.py \
 
 echo "done with fmriprep! - now organizing output"
 
