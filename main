@@ -168,7 +168,7 @@ if [[ $inFMRI != "null" ]] ; then
 
     #temporarily removing datataype field from meta as we used to copy all nifti headers
     #into meta and it was colliding with BIDS datatype field
-	jq -r '.meta | del(.["datatype"])' fmri.json | jq ".meta.task = \"$task\"" > ${name_FMRI}_bold.json
+	jq -r '.meta | del(.["datatype"])' fmri.json | jq ".task = \"$task\"" > ${name_FMRI}_bold.json
 	bids_phaseencode_check ${name_FMRI}_bold.json 
 fi
 ################################################################################
