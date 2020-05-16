@@ -147,30 +147,53 @@ fi
 
 ################################################################################
 # FMRI
+#if [[ $inFMRI != "null" ]] ; then
+#	mkdir -p $bidsSubSesDir/func
+#	jq '._inputs[] | select(.id == "fmri")' config.json > fmri.json
+#
+#	# fmriprep needs task in the filename to be defined!
+#    # let's use task, TaskName, and if neither is set, set it to unknown
+#    task=$(jq .meta.task fmri.json)
+#    if [ "$task" == null ]; then
+#        task=$(jq .meta.TaskName fmri.json)
+#        if [ "$task" == null ]; then
+#            task="unknown"
+#        fi
+#    fi
+#
+#    #temporarily removing datataype field from meta as we used to copy all nifti headers
+#    #into meta and it was colliding with BIDS datatype field
+#	name_FMRI=$bidsSubSesDir/func/$bidsSub
+#	jq '.meta | del(.["datatype"])' fmri.json | jq ".task = \"$task\"" > ${name_FMRI}_bold.json
+#    echo "Wrote to ${name_FMRI}_bold.json"
+#
+#	name_FMRI=$(bids_namekeyvals $name_FMRI ${name_FMRI}_bold.json "task acq ce dir rec run echo" $ses )
+#	cp $inFMRI ${name_FMRI}_bold.nii.gz
+#
+#	bids_phaseencode_check ${name_FMRI}_bold.json 
+#fi
+
 if [[ $inFMRI != "null" ]] ; then
 	mkdir -p $bidsSubSesDir/func
-	jq '._inputs[] | select(.id == "fmri")' config.json > fmri.json
+	jq '._inputs[] | select(.id == "fmri")' config.json > fmri.prep.json
 
-
-	name_FMRI=$bidsSubSesDir/func/$bidsSub
-	name_FMRI=$(bids_namekeyvals $name_FMRI fmri.json "task acq ce dir rec run echo" $ses )
-	cp $inFMRI ${name_FMRI}_bold.nii.gz
-
-	# fmriprep needs task in the filename to be defined!
-    # let's use task, TaskName, and if neither is set, set it to unknown
-    task=$(jq .meta.task fmri.json)
+	# fmri needs task in the filename to be defined!
+    task=$(jq -r .meta.task fmri.prep.json)
     if [ "$task" == null ]; then
-        task=$(jq .meta.TaskName fmri.json)
+        task=$(jq -r .meta.TaskName fmri.prep.json)
         if [ "$task" == null ]; then
             task="unknown"
         fi
     fi
+    cat fmri.prep.json | jq ".meta.task = \"$task\"" > fmri.json
 
-    #temporarily removing datataype field from meta as we used to copy all nifti headers
-    #into meta and it was colliding with BIDS datatype field
-	jq -r '.meta | del(.["datatype"])' fmri.json | jq ".task = \"$task\"" > ${name_FMRI}_bold.json
-	bids_phaseencode_check ${name_FMRI}_bold.json 
+	name_FMRI=$bidsSubSesDir/func/$bidsSub
+	name_FMRI=$(bids_namekeyvals $name_FMRI fmri.json "task acq ce dir rec run echo" $ses )
+	cp $inFMRI ${name_FMRI}_bold.nii.gz
+	jq -r '.meta | del(.["datatype"])' fmri.json > ${name_FMRI}_bold.json
+	bids_phaseencode_check ${name_FMRI}_bold.json
 fi
+
 ################################################################################
 #
 # FMAP
