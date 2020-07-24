@@ -58,7 +58,8 @@ if [[ $stagingDir = "." ]]; then
 fi
 
 jq '._inputs[] | select(.id == "t1w")' config.json > t1w.json
-bidsSub=$(jq -r .meta.subject t1w.json)
+#TODO - strip alphanumeric chars
+sub=$(jq -r .meta.subject t1w.json)
 ses=$(jq -r .meta.session t1w.json)
 
 #####################################################################################
@@ -70,18 +71,17 @@ rm -rf $INDIRNAME && mkdir -p $INDIRNAME
 rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
 rm -rf $outdir && mkdir -p $outdir
 
-# the bids dir will be inside ouf input
+# the bids dir will be inside our input
 bidsDir=$INDIRNAME
-bidsSubDir=$bidsDir/$bidsSub
+bidsSubDir=$bidsDir/sub-$sub
 bidsSubSesDir=$bidsSubDir/ses-$ses
 mkdir -p $bidsSubSesDir
 
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
 if [[ $inFSDIR != "null" ]] ; then
-
 	mkdir -p $outdir/freesurfer
-    cp -r $inFSDIR $outdir/freesurfer/$bidsSub
+    cp -r $inFSDIR $outdir/freesurfer/sub-$sub
     chmod -R +rw $outdir/freesurfer
 fi
 
@@ -90,8 +90,8 @@ mkdir -p templateflow
 export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 
 # set FreeSurfer
-[ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
-echo $FREESURFER_LICENSE > license.txt
+#[ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
+#echo $FREESURFER_LICENSE > license.txt
 
 time singularity exec -e \
     docker://poldracklab/fmriprep:20.1.1 \
@@ -105,11 +105,12 @@ time singularity exec -e \
     --output-spaces $output_space MNI152NLin2009cAsym \
     --force-bbr \
     --use-syn-sdc \
-    --fs-license-file=license.txt \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
-    --participant_label="$bidsSub" \
+    --participant_label=$sub \
     bids $outdir participant
+
+#--fs-license-file=license.txt \
 
 echo "done with fmriprep! - now organizing output"
 
@@ -123,7 +124,7 @@ echo "done with fmriprep! - now organizing output"
 
 # get basename
 inFMRI=${name_FMRI}_bold.nii.gz
-oDirFunc=$outdir/fmriprep/$bidsSub/ses-${ses}/func/
+oDirFunc=$outdir/fmriprep/sub-$sub/ses-$ses/func/
 outBase="$oDirFunc/$(basename $(echo $inFMRI | sed s,_bold.nii.gz,, ))"
 
 # first of all, get the confounds
@@ -177,8 +178,8 @@ fi
 ###################
 
 #inT1w=${name_T1w}_T1w.nii.gz
-oDirAnat=$outdir/fmriprep/$bidsSub/anat/
-outBase=$oDirAnat/$bidsSub
+oDirAnat=$outdir/fmriprep/sub-$sub/anat/
+outBase=$oDirAnat/sub-$sub
 
 # get the preproc t1w vol
 tmp=${outBase}_desc-preproc_T1w.nii.gz
