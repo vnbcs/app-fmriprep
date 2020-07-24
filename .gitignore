@@ -15,4 +15,5 @@ t1w.json
 t2w.json
 templateflow/
 test.sh
-
+bids
+fmripworkdir

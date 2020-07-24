@@ -1,1 +1,20 @@
-rm -rf anat/ anat_mask/ bold_img/ bold_mask/ fmap.json fmri.json fmripinput/ fmripout/ fmripworkdir/ license.txt multi_proc.yml nohup.out output_report/ product.json regress/ t1w.json t2w.json templateflow fmripoutput/
+rm -rf anat 
+rm -rf anat_mask 
+rm -rf bold_img 
+rm -rf bold_mask
+rm -f fmap.json 
+rm -f fmri.json 
+rm -rf fmripinput 
+rm -rf fmripout 
+rm -rf fmripworkdir 
+rm -f license.txt 
+rm -f multi_proc.yml 
+rm -f nohup.out 
+rm -rf output_report
+rm -f product.json 
+rm -rf regress 
+rm -f t1w.json 
+rm -f t2w.json 
+rm -rf templateflow 
+rm -rf fmripoutput
+rm -rf bids
