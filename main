@@ -107,10 +107,10 @@ time singularity exec -e \
     --use-syn-sdc \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
-    --participant_label=$sub \
+    --fs-license-file=license.txt \
     bids $outdir participant
 
-#--fs-license-file=license.txt \
+#--participant_label=$sub \
 
 echo "done with fmriprep! - now organizing output"
 
