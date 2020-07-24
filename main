@@ -21,7 +21,7 @@ EOF
 
 WORKDIRNAME=fmripworkdir
 outdir=fmripout
-INDIRNAME=fmripinput
+#INDIRNAME=fmripinput
 
 inT1w=`jq -r '.t1' config.json`
 inT2w=`jq -r '.t2' config.json`
@@ -67,15 +67,15 @@ ses=$(jq -r .meta.session t1w.json)
 # setup bids dir structure
 
 # remove if stuff already exists
-rm -rf $INDIRNAME && mkdir -p $INDIRNAME
+#rm -rf $INDIRNAME && mkdir -p $INDIRNAME
 rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
 rm -rf $outdir && mkdir -p $outdir
 
 # the bids dir will be inside our input
-bidsDir=$INDIRNAME
-bidsSubDir=$bidsDir/sub-$sub
-bidsSubSesDir=$bidsSubDir/ses-$ses
-mkdir -p $bidsSubSesDir
+#bidsDir=$INDIRNAME
+#bidsSubDir=$bidsDir/sub-$sub
+#bidsSubSesDir=$bidsSubDir/ses-$ses
+#mkdir -p $bidsSubSesDir
 
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
@@ -115,27 +115,17 @@ time singularity exec -e \
 echo "done with fmriprep! - now organizing output"
 
 #####################################################################################
+# reogranize output for brainlife 
 #####################################################################################
-# reorganize outputs
-
-####################
-### bold outputs ###
-####################
 
 # get basename
-inFMRI=${name_FMRI}_bold.nii.gz
-oDirFunc=$outdir/fmriprep/sub-$sub/ses-$ses/func/
-outBase="$oDirFunc/$(basename $(echo $inFMRI | sed s,_bold.nii.gz,, ))"
+oDir=$outdir/fmriprep/sub-$sub/ses-$ses
 
-# first of all, get the confounds
-tmp=${outBase}_desc-confounds_regressors.tsv
 mkdir -p regress
-mv -v $tmp regress/regressors.tsv
-
-tmp=${outBase}_desc-confounds_regressors.json
-if [[ -e $tmp ]] ; then
-    mv -v $tmp regress/regressors.json
-fi 
+regressors_tsv=`find $oDir/func/*_desc-confounds_regressors.tsv`
+[[ -f $regressors_tsv ]] && cp $regressors_tsv regress/regressors.tsv
+regressors_json=`find $oDir/func/*_desc-confounds_regressors.json`
+[[ -f $regressors_json ]] && cp $regressors_json regress/regressors.json
 
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
@@ -143,10 +133,9 @@ product=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     # fsaverage (for the future)
     mkdir -p surface
-    tmp=${outBase}_space-${space}_hemi-L.func.gii
-    mv -v $tmp surface/left_data.gii
-    tmp=${outBase}_space-${space}_hemi-R.func.gii
-    mv -v $tmp surface/right_data.gii
+
+    ln -sf ../`find $oDir/func/*_space-${space}_hemi-L.func.gii` surface/left_data.gii
+    ln -sf ../`find $oDir/func/*_space-${space}_hemi-R.func.gii` surface/right_data.gii
 
     if [[ $space =~ 'fsaverage' ]] ; then
         product="\"surface\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
@@ -162,47 +151,46 @@ else # else its a volume(bold) output
     product="\"bold_img\": {\"meta\": {\"Space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
 
     # get the preproc fmri vol
-    tmp=${outBase}_space-${space}_desc-preproc_bold.nii.gz
     mkdir -p bold_img
-    mv -v $tmp bold_img/bold.nii.gz
+    ln -sf ../$(find $oDir/func/*_space-${space}_desc-preproc_bold.nii.gz) bold_img/bold.nii.gz
 
     # get the preproc fmri volmask
-    tmp=${outBase}_space-${space}_desc-brain_mask.nii.gz
     mkdir -p bold_mask
-    mv -v $tmp bold_mask/mask.nii.gz
-
+    ln -sf ../$(find $oDir/func/*_space-${space}_desc-brain_mask.nii.gz) bold_mask/mask.nii.gz
 fi
 
 ###################
 ### T1w outputs ###
 ###################
 
-#inT1w=${name_T1w}_T1w.nii.gz
-oDirAnat=$outdir/fmriprep/sub-$sub/anat/
-outBase=$oDirAnat/sub-$sub
+#oDir=$outdir/fmriprep/sub-$sub/ses-$ses
+#some reason, anat output are stored without session.. why!?
+oDir=$outdir/fmriprep/sub-$sub
 
 # get the preproc t1w vol
-tmp=${outBase}_desc-preproc_T1w.nii.gz
 mkdir -p anat
-mv -v $tmp anat/t1.nii.gz
+ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
 
-tmp=${outBase}_desc-brain_mask.nii.gz
 mkdir -p anat_mask
-mv -v $tmp anat_mask/mask.nii.gz
+ln -sf ../$oDir/anat/sub-${sub}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
 
 ##################
 ### reportlets ###
 ##################
 
 mkdir -p output_report
-html=$(cd $outdir && find ./ -name "*.html")
-mkdir -p output_report/$(dirname $html)
-cp $outdir/$html output_report/$html
+for html in $(cd $outdir && find ./ -name "*.html"); do
+    mkdir -p output_report/$(dirname $html)
+    cp $outdir/$html output_report/$html
+done
+
 for dir in $(cd $outdir && find ./ -name figures); do
     mkdir -p output_report/$(dirname $dir)
     cp -r $outdir/$dir output_report/$(dirname $dir)
 done
-mv output_report/fmriprep output_report/html #rename the parent directory to confirm to brainlife html output
+
+#rename the parent directory to confirm to brainlife html output
+mv output_report/fmriprep output_report/html 
 
 cat << EOF > product.json
 {
@@ -225,3 +213,4 @@ EOF
 rm -r $WORKDIRNAME
 
 echo "all done"
+
