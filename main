@@ -57,30 +57,20 @@ if [[ $stagingDir = "." ]]; then
    exit 1
 fi
 
-jq '._inputs[] | select(.id == "t1w")' config.json > t1w.json
-#TODO - strip alphanumeric chars
-sub=$(jq -r .meta.subject t1w.json)
-ses=$(jq -r .meta.session t1w.json)
-
 #####################################################################################
 #####################################################################################
 # setup bids dir structure
 
 # remove if stuff already exists
-#rm -rf $INDIRNAME && mkdir -p $INDIRNAME
 rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
 rm -rf $outdir && mkdir -p $outdir
-
-# the bids dir will be inside our input
-#bidsDir=$INDIRNAME
-#bidsSubDir=$bidsDir/sub-$sub
-#bidsSubSesDir=$bidsSubDir/ses-$ses
-#mkdir -p $bidsSubSesDir
 
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
 if [[ $inFSDIR != "null" ]] ; then
 	mkdir -p $outdir/freesurfer
+    #TODO - strip alphanumeric chars?
+    sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
     cp -r $inFSDIR $outdir/freesurfer/sub-$sub
     chmod -R +rw $outdir/freesurfer
 fi
@@ -118,8 +108,11 @@ echo "done with fmriprep! - now organizing output"
 # reogranize output for brainlife 
 #####################################################################################
 
-# get basename
-oDir=$outdir/fmriprep/sub-$sub/ses-$ses
+# get basename for fmri output
+sub=$(jq -r '._inputs[] | select(.id == "fmri") | .meta.subject' config.json)
+oDir=$outdir/fmriprep/sub-$sub
+ses=$(jq -r '._inputs[] | select(.id == "fmri") | .meta.session' config.json)
+[ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 
 mkdir -p regress
 regressors_tsv=`find $oDir/func/*_desc-confounds_regressors.tsv`
@@ -163,11 +156,9 @@ fi
 ### T1w outputs ###
 ###################
 
-#oDir=$outdir/fmriprep/sub-$sub/ses-$ses
-#some reason, anat output are stored without session.. why!?
+sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
 oDir=$outdir/fmriprep/sub-$sub
 
-# get the preproc t1w vol
 mkdir -p anat
 ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
 
