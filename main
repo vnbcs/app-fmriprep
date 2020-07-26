@@ -127,8 +127,8 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     # fsaverage (for the future)
     mkdir -p surface
 
-    ln -sf ../`find $oDir/func/*_space-${space}_hemi-L.func.gii` surface/left_data.gii
-    ln -sf ../`find $oDir/func/*_space-${space}_hemi-R.func.gii` surface/right_data.gii
+    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface/left_data.gii
+    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface/right_data.gii
 
     if [[ $space =~ 'fsaverage' ]] ; then
         product="\"surface\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
