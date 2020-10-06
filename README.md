@@ -29,7 +29,7 @@ Check out the brainlife app [here](https://doi.org/10.25663/brainlife.app.160)
 
 ### Running Locally
 
-A
+A)
   1) git clone this repo.
   2) Inside the cloned directory, create `config.json` with something like the following content with paths to your input files.
 
@@ -47,12 +47,14 @@ A
   ./main
   ```
  
-B
-  1) Alternatively, there is a command line interface useful for debugging.
+B)
+  Alternatively, there is a command line interface useful for debugging.
 
 ## Output
 
-This app outputs the completed fmriprep dir, along with some of the outputs mapped for the brainlife interface.
+This app outputs the completed fmriprep dir, along with some of the outputs mapped for the brainlife interface. There are two different apps that run this code, so based on the app run, it will affect the output (volume vs. surface output). 
+
+The outputs will include a `bold.nii.gz`, `mask.nii.gz`, `regressors.tsv`, `t1.nii.gz`, and some html output for quality control.
 
 ### Dependencies
 
@@ -60,5 +62,6 @@ This App requires [singularity](https://www.sylabs.io/singularity/) to run. If y
 
 ---
 
-### Notes.
-This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation.
+#### MIT Copyright (c) brainlife.io
+
+<sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>
