@@ -5,6 +5,7 @@
 
 This app runs [fMRIPrep](https://github.com/poldracklab/fmriprep) on the [brainlife.io](https://brainlife.io/) interface. fMRIPrep is a robust processing tool delevoped by the [Poldrack Lab at Stanford](https://poldracklab.stanford.edu/). The pipelines process T1w, T2w, fMRI, and fieldmaps by calling a series of functions from FSL, FreeSurfer, ANTs, and nipy. It applies these tools in a principled way designed to handle common imaging artifacts and biases in a parimonious manner. It outputs processed anatomical and functional images for further analysis. 
 
+#### citiations and resources to consider
 * fMRIPrep paper: [nature methods paper](https://doi.org/10.1038/s41592-018-0235-4)
 * fMRIPrep documentation: [read the docs](https://fmriprep.readthedocs.io/en/stable/)
 * fMRIPrep also provides documentation to credit the tools employed in the pipeline: [citing tools](https://fmriprep.readthedocs.io/en/stable/citing.html)
@@ -17,6 +18,8 @@ This app runs [fMRIPrep](https://github.com/poldracklab/fmriprep) on the [brainl
 - Franco Pestilli ([@francopestilli](https://github.com/francopestilli))
 
 ### Funding 
+
+[![NSF-GRFP-1342962](https://img.shields.io/badge/NSF_GRFP-1342962-blue.svg)](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1342962)
 [![NSF-BCS-1734853](https://img.shields.io/badge/NSF_BCS-1734853-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1734853)
 [![NSF-IIS-1636893](https://img.shields.io/badge/NSF_BCS-1636893-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1636893)
 [![NSF-1342962](https://img.shields.io/badge/NSF_DGE-1342962-blue.svg)](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1342962)
