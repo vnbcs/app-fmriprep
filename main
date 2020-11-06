@@ -93,7 +93,7 @@ time singularity exec -e \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
     --output-spaces $output_space MNI152NLin2009cAsym \
-    --cifti-outputs \
+    --cifti-output \
     --force-bbr \
     --use-syn-sdc \
     --skull-strip-template=NKI \
@@ -127,22 +127,27 @@ product=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     # fsaverage (for the future)
     mkdir -p surface
-
     ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface/left_data.gii
     ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface/right_data.gii
-
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"surface\": { \"meta\": { \"Space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
+        product="\"surface\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
     fi
     if [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
-        product="\"surface\": { \"meta\": { \"Space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
+        product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
 
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
     fi
 
+    # cifti output
+    mkdir -p cifti
+    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
+    if [[ $space =~ 'fsaverage' ]] ; then
+        product="\"cifti\": { \"meta\": { },"
+    fi
+
 else # else its a volume(bold) output
-    product="\"bold_img\": {\"meta\": {\"Space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
+    product="\"bold_img\": {\"meta\": {\"space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
 
     # get the preproc fmri vol
     mkdir -p bold_img
