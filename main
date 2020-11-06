@@ -31,6 +31,7 @@ inFSDIR=`jq -r '.fsin' config.json`
 space=$(jq -r .space config.json)
 
 output_space=$space
+cifti_output_resolution="91k" #could be 170k-higher resolution CIFTI output (170494 grayordinates @ 1.6mm).
 
 #for volume output
 resolution=$(jq -r .resolution config.json)
@@ -83,6 +84,8 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
 echo $FREESURFER_LICENSE > license.txt
 
+# TODO - I shouldn't set cifti-output if it's running in volume mode?
+
 time singularity exec -e \
     docker://poldracklab/fmriprep:20.2.0 \
     /usr/local/miniconda/bin/fmriprep \
@@ -93,15 +96,13 @@ time singularity exec -e \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
     --output-spaces $output_space MNI152NLin2009cAsym \
-    --cifti-output \
+    --cifti-output $cifti_output_resolution \
     --force-bbr \
     --use-syn-sdc \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
     --fs-license-file=license.txt \
     bids $outdir participant
-
-#--participant_label=$sub \
 
 echo "done with fmriprep! - now organizing output"
 
@@ -143,7 +144,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mkdir -p cifti
     ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"cifti\": { \"meta\": { },"
+        product="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
     fi
 
 else # else its a volume(bold) output
