@@ -1,6 +1,7 @@
 #!/bin/bash
 
-surf=fmripout/freesurfer/sub-TTTEMPSUB/surf
+surf=$1
+echo "converting surfaces to .gii in $surf"
 
 mris_convert $surf/lh.pial surface/left_pial.surf.gii
 mris_convert $surf/rh.pial surface/right_pial.surf.gii

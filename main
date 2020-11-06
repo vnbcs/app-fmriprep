@@ -69,7 +69,7 @@ rm -rf $outdir && mkdir -p $outdir
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
 if [[ $inFSDIR != "null" ]] ; then
-	mkdir -p $outdir/freesurfer
+    mkdir -p $outdir/freesurfer
     #TODO - strip alphanumeric chars?
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
     cp -r $inFSDIR $outdir/freesurfer/sub-$sub
@@ -137,7 +137,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
         product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
 
-        time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh
+        time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
     fi
 
     # cifti output
@@ -169,10 +169,9 @@ ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 [ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 
 mkdir -p anat
-ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-
+ln -sf ../$oDir/anat/*_desc-preproc_T1w.nii.gz anat/t1.nii.gz
 mkdir -p anat_mask
-ln -sf ../$oDir/anat/sub-${sub}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
+ln -sf ../$oDir/anat/*_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
 
 ##################
 ### reportlets ###
