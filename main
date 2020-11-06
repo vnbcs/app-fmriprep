@@ -93,6 +93,7 @@ time singularity exec -e \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
     --output-spaces $output_space MNI152NLin2009cAsym \
+    --cifti-outputs \
     --force-bbr \
     --use-syn-sdc \
     --skull-strip-template=NKI \
