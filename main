@@ -158,6 +158,8 @@ fi
 
 sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
 oDir=$outdir/fmriprep/sub-$sub
+ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
+[ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 
 mkdir -p anat
 ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
