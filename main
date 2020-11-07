@@ -96,6 +96,7 @@ time singularity exec -e \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
     --output-spaces $output_space MNI152NLin2009cAsym \
+    --cifti-output $cifti_output_resolution \
     --force-bbr \
     --use-syn-sdc \
     --skull-strip-template=NKI \
@@ -103,7 +104,6 @@ time singularity exec -e \
     --fs-license-file=license.txt \
     bids $outdir participant
 
-#--cifti-output $cifti_output_resolution \
 
 echo "done with fmriprep! - now organizing output"
 
@@ -141,12 +141,12 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
     fi
 
-    # cifti output (doesn't work?)
-    #mkdir -p cifti
-    #ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
-    #if [[ $space =~ 'fsaverage' ]] ; then
-    #    product="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
-    #fi
+    # cifti output 
+    mkdir -p cifti
+    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
+    if [[ $space =~ 'fsaverage' ]] ; then
+        product="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
+    fi
 
 else # else its a volume(bold) output
     product="\"bold_img\": {\"meta\": {\"space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
@@ -162,19 +162,19 @@ fi
 
 ### T1w outputs (subject space) ###
 # TODO - there are t1w ouput for each space- should we output thenm also?
+mkdir -p anat anat_mask
+
 sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
 oDir=$outdir/fmriprep/sub-$sub
-mkdir -p anat anat_mask
+#there are t1w output for each output space, so we can't use wilcard
 ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 if [ "$ses" != "null" ]; then
     oDir=$oDir/ses-$ses
-    #there are t1w output for each output space, so we can't use wilcard
-    ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-    ln -sf ../$oDir/anat/sub-${sub}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
-else
-    #there are t1w output for each output space, so we can't use wilcard
     ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
     ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
+else
+    ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
+    ln -sf ../$oDir/anat/sub-${sub}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
 fi
 
 ##################
