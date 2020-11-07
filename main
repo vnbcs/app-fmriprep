@@ -135,7 +135,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mkdir -p cifti
     ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
 
-    product_cifti="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
+    product_cifti="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"} },"
 
     #construct product
     if [[ $space =~ 'fsaverage' ]] ; then
