@@ -181,6 +181,7 @@ fi
 ### reportlets ###
 ##################
 
+rm -rf output_report #in case it's already there
 mkdir -p output_report
 for html in $(cd $outdir && find ./ -name "*.html"); do
     mkdir -p output_report/$(dirname $html)
