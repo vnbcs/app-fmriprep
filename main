@@ -131,21 +131,24 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mkdir -p surface
     ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface/left_data.gii
     ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface/right_data.gii
+    # cifti output 
+    mkdir -p cifti
+    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
+
+    product_cifti="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
+
+    #construct product
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"surface\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] },"
+        product="\"surface\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product_cifti"
     fi
     if [[ $space == 'fsnative' ]] ; then
         #convert some freesurfer surfaces to gii
-        product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] },"
+        product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] }, $product_citfi"
 
         time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
     fi
 
-    # cifti output 
-    mkdir -p cifti
-    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
     if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"},"
     fi
 
 else # else its a volume(bold) output
