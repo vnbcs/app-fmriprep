@@ -152,7 +152,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     fi
 
 else # else its a volume(bold) output
-    product="\"bold_img\": {\"meta\": {\"space\", \"$space\"}, \"tags\": [ \"space-$space\" ]},"
+    product="\"bold_img\": {\"meta\": {\"space\": \"$space\"}, \"tags\": [ \"space-$space\" ]},"
 
     # get the preproc fmri vol
     mkdir -p bold_img
