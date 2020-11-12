@@ -87,7 +87,7 @@ echo $FREESURFER_LICENSE > license.txt
 # TODO - I shouldn't set cifti-output if it's running in volume mode?
 
 time singularity exec -e \
-    docker://poldracklab/fmriprep:20.2.0 \
+    docker://poldracklab/fmriprep:20.2.1 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
