@@ -127,30 +127,39 @@ regressors_json=`find $oDir/func/*_desc-confounds_timeseries.json`
 # this will match for fsaverage, fsaverage5, ...
 product=""
 if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
-    # fsaverage (for the future)
-    mkdir -p surface
-    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface/left_data.gii
-    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface/right_data.gii
+    # for surface/data
+    mkdir -p surface-data
+    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface-data/left.gii
+    ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface-data/right.gii
+    product="\"surface-data\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product"
+
+    # for surface/vertices (we only need this for fsnative)
+    mkdir -p surface-vertices/right surface-vertices/left
+    time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt \
+        docker://brainlife/freesurfer_on_mcr:6.0.0 \
+        ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
+    product="\"surface-vertices\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product"
 
     # cifti output 
     mkdir -p cifti
-    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/bold.dtseries.nii
+    ln -sf ../$(find $oDir/func/*_bold.dtseries.nii) cifti/cifti.nii
+    cifti_json=$(cat $oDir/func/*_bold.dtseries.json)
+    product="\"cifti\": { \"meta\": $cifti_json }, $product"
 
-    product_cifti="\"cifti\": { \"meta\": { \"output_resolution\": \"$cifti_output_resolution\"} },"
-
-    #construct product
-    if [[ $space =~ 'fsaverage' ]] ; then
-        product="\"surface\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product_cifti"
-    fi
-    if [[ $space == 'fsnative' ]] ; then
-        #convert some freesurfer surfaces to gii
-        product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] }, $product_citfi"
-
-        time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.0 ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
-    fi
+    # for parcellation/surface-deprecated
+    #mkdir -p surface
+    #ln -sf ../$(find $oDir/func/*_space-${space}_hemi-L_bold.func.gii) surface/left_data.gii
+    #ln -sf ../$(find $oDir/func/*_space-${space}_hemi-R_bold.func.gii) surface/right_data.gii
+    #if [[ $space =~ 'fsaverage' ]] ; then
+    #    product="\"surface\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product"
+    #fi
+    #if [[ $space == 'fsnative' ]] ; then
+    #    #convert some freesurfer surfaces to gii
+    #    product="\"surface\": { \"meta\": { \"space\": \"native\" }, \"tag\": [ \"space-native\" ] }, $product"
+    #fi
 
 else # else its a volume(bold) output
-    product="\"bold_img\": {\"meta\": {\"space\": \"$space\"}, \"tags\": [ \"space-$space\" ]},"
+    product="\"bold_img\": {\"meta\": {\"space\": \"$space\"}, \"tags\": [ \"space-$space\" ]}, $product"
 
     # get the preproc fmri vol
     mkdir -p bold_img
