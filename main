@@ -91,7 +91,6 @@ time singularity exec -e \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
-    --skip-bids-validation \
     --md-only-boilerplate \
     --stop-on-first-crash \
     --use-plugin=multi_proc.yml \
@@ -104,6 +103,7 @@ time singularity exec -e \
     --fs-license-file=license.txt \
     bids $outdir participant
 
+#--skip-bids-validation \
 
 echo "done with fmriprep! - now organizing output"
 
