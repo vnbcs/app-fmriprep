@@ -87,7 +87,7 @@ echo $FREESURFER_LICENSE > license.txt
 # TODO - I shouldn't set cifti-output if it's running in volume mode?
 
 time singularity exec -e \
-    docker://poldracklab/fmriprep:20.2.0 \
+    docker://nipreps/fmriprep:20.2.1 \
     /usr/local/miniconda/bin/fmriprep \
     --notrack \
     --resource-monitor \
@@ -171,21 +171,22 @@ else # else its a volume(bold) output
 fi
 
 ### T1w outputs (subject space) ###
-# TODO - there are t1w ouput for each space- should we output thenm also?
+#there are t1w output for each output space, so we can't use wilcard
+# TODO - should we output all output spaces?
 mkdir -p anat anat_mask
-
 sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
 oDir=$outdir/fmriprep/sub-$sub
-#there are t1w output for each output space, so we can't use wilcard
 ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
-if [ "$ses" != "null" ]; then
-    oDir=$oDir/ses-$ses
-    ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-    ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
-else
-    ln -sf ../$oDir/anat/sub-${sub}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-    ln -sf ../$oDir/anat/sub-${sub}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
-fi
+[ "$ses" != "null" ] && oDir=$oDir/ses-$ses
+#this doesn't handle run..
+#ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
+ln -sf ../$oDir/anat/*_desc-preproc_T1w.nii.gz anat/t1.nii.gz
+anat_json=$(cat $oDir/anat/*_desc_preproc_T1w.json)
+product="\"anat\": {\"meta\": $anat_json }, $product"
+#ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
+ln -sf ../$oDir/anat/*_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
+anat_mask_json=$(cat $oDir/anat/*_desc_brain_mask.json)
+product="\"anat\": {\"meta\": $anat_json }, $product"
 
 ##################
 ### reportlets ###
