@@ -86,24 +86,25 @@ echo $FREESURFER_LICENSE > license.txt
 
 # TODO - I shouldn't set cifti-output if it's running in volume mode?
 
-time singularity exec -e \
-    docker://nipreps/fmriprep:20.2.1 \
-    /usr/local/miniconda/bin/fmriprep \
-    --notrack \
-    --resource-monitor \
-    --md-only-boilerplate \
-    --stop-on-first-crash \
-    --use-plugin=multi_proc.yml \
-    --output-spaces $output_space MNI152NLin2009cAsym \
-    --cifti-output $cifti_output_resolution \
-    --force-bbr \
-    --use-syn-sdc \
-    --skull-strip-template=NKI \
-    --work-dir=$WORKDIRNAME \
-    --fs-license-file=license.txt \
-    bids $outdir participant
-
-#--skip-bids-validation \
+if [ ! -d $outdir/fmriprep ]; then
+    time singularity exec -e \
+        docker://nipreps/fmriprep:20.2.1 \
+        /usr/local/miniconda/bin/fmriprep \
+        --notrack \
+        --resource-monitor \
+        --md-only-boilerplate \
+        --stop-on-first-crash \
+        --use-plugin=multi_proc.yml \
+        --output-spaces $output_space MNI152NLin2009cAsym \
+        --cifti-output $cifti_output_resolution \
+        --force-bbr \
+        --use-syn-sdc \
+        --skull-strip-template=NKI \
+        --work-dir=$WORKDIRNAME \
+        --fs-license-file=license.txt \
+        bids $outdir participant
+    #--skip-bids-validation \
+fi
 
 echo "done with fmriprep! - now organizing output"
 
@@ -181,11 +182,11 @@ ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 #this doesn't handle run..
 #ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
 ln -sf ../$oDir/anat/*_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-anat_json=$(cat $oDir/anat/*_desc_preproc_T1w.json)
+anat_json=$(cat $oDir/anat/*_desc-preproc_T1w.json)
 product="\"anat\": {\"meta\": $anat_json }, $product"
 #ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
 ln -sf ../$oDir/anat/*_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
-anat_mask_json=$(cat $oDir/anat/*_desc_brain_mask.json)
+anat_mask_json=$(cat $oDir/anat/*_desc-brain_mask.json)
 product="\"anat\": {\"meta\": $anat_json }, $product"
 
 ##################
