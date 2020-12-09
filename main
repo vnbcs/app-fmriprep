@@ -19,8 +19,8 @@ EOF
 
 #source bids_funcs.sh
 
-WORKDIRNAME=fmripworkdir
-outdir=fmripout
+WORKDIRNAME=work
+outdir=out
 #INDIRNAME=fmripinput
 
 inT1w=`jq -r '.t1' config.json`
@@ -62,14 +62,14 @@ fi
 #####################################################################################
 # setup bids dir structure
 
-# remove if stuff already exists
-rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
-rm -rf $outdir && mkdir -p $outdir
-
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
 if [[ $inFSDIR != "null" ]] ; then
+
+    #clean up previous freesurfer dir if it exists
+    rm -rf $outdir/freesurfer
     mkdir -p $outdir/freesurfer
+
     #TODO - strip alphanumeric chars?
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
     cp -r $inFSDIR $outdir/freesurfer/sub-$sub
@@ -87,6 +87,10 @@ echo $FREESURFER_LICENSE > license.txt
 # TODO - I shouldn't set cifti-output if it's running in volume mode?
 
 if [ ! -d $outdir/fmriprep ]; then
+
+    #clean up previous workdir if it exist
+    rm -rf $WORKDIRNAME && mkdir -p $WORKDIRNAME
+
     time singularity exec -e \
         docker://nipreps/fmriprep:20.2.1 \
         /usr/local/miniconda/bin/fmriprep \
