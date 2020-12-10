@@ -185,11 +185,11 @@ ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 [ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 #this doesn't handle run..
 #ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-preproc_T1w.nii.gz anat/t1.nii.gz
-ln -sf ../$oDir/anat/*_desc-preproc_T1w.nii.gz anat/t1.nii.gz
+ln -sf ../$(find $oDir/anat/*_desc-preproc_T1w.nii.gz) anat/t1.nii.gz
 anat_json=$(cat $oDir/anat/*_desc-preproc_T1w.json)
 product="\"anat\": {\"meta\": $anat_json }, $product"
 #ln -sf ../$oDir/anat/sub-${sub}_ses-${ses}_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
-ln -sf ../$oDir/anat/*_desc-brain_mask.nii.gz anat_mask/mask.nii.gz
+ln -sf ../$(find $oDir/anat/*_desc-brain_mask.nii.gz) anat_mask/mask.nii.gz
 anat_mask_json=$(cat $oDir/anat/*_desc-brain_mask.json)
 product="\"anat\": {\"meta\": $anat_json }, $product"
 
