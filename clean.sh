@@ -5,8 +5,8 @@ rm -rf bold_mask
 rm -f fmap.json 
 rm -f fmri.json 
 rm -rf fmripinput 
-rm -rf fmripout 
-rm -rf fmripworkdir 
+rm -rf out 
+rm -rf workdir 
 rm -f license.txt 
 rm -f multi_proc.yml 
 rm -f nohup.out 
@@ -16,5 +16,4 @@ rm -rf regress
 rm -f t1w.json 
 rm -f t2w.json 
 rm -rf templateflow 
-rm -rf fmripoutput
 rm -rf bids

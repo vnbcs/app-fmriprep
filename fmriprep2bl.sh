@@ -36,7 +36,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     mkdir -p surface-vertices/right surface-vertices/left
     time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt \
         docker://brainlife/freesurfer_on_mcr:6.0.0 \
-        ./convertsurf.sh fmripout/freesurfer/sub-$sub/surf
+        ./convertsurf.sh out/freesurfer/sub-$sub/surf
     product="\"surface-vertices\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product"
 
     # cifti output 
