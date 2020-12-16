@@ -39,6 +39,9 @@ if [ $resolution != "original" ] && [ $resolution != "null" ] ;then
     output_space=$space:$resolution
 fi
 
+skipbidsvalidation=""
+[ "$(jq -r .skipbidsvalidation config.json)" == "true" ] && skipbidsvalidation="--skip-bids-validation"
+
 #####################################################################################
 #####################################################################################
 # some logical checks
@@ -84,7 +87,6 @@ export SINGULARITYENV_TEMPLATEFLOW_HOME=$PWD/templateflow
 [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
 echo $FREESURFER_LICENSE > license.txt
 
-
 if [ ! -d $outdir/fmriprep ]; then
 
     #clean up previous workdir if it exist
@@ -103,11 +105,11 @@ if [ ! -d $outdir/fmriprep ]; then
         --cifti-output $cifti_output_resolution \
         --force-bbr \
         --use-syn-sdc \
+        $skipbidsvalidation \
         --skull-strip-template=NKI \
         --work-dir=$WORKDIRNAME \
         --fs-license-file=license.txt \
         bids $outdir participant
-    #--skip-bids-validation \
 fi
 
 echo "done with fmriprep! - now organizing output"
