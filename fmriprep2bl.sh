@@ -50,11 +50,12 @@ else # else its a volume(bold) output
 
     # get the preproc fmri vol
     mkdir -p bold_img
-    ln -sf ../$(find $oDir/func -name "*_space-${space}_desc-preproc_bold.nii.gz") bold_img/bold.nii.gz
+    #sub-A00008326_ses-DS2_task-rest_acq-645_space-MNI152NLin6Asym_res-2_desc-preproc_bold.nii.gz
+    ln -sf ../$(find $oDir/func -name "*_space-${space}_*desc-preproc_bold.nii.gz") bold_img/bold.nii.gz
 
     # get the preproc fmri volmask
     mkdir -p bold_mask
-    ln -sf ../$(find $oDir/func -name "*_space-${space}_desc-brain_mask.nii.gz") bold_mask/mask.nii.gz
+    ln -sf ../$(find $oDir/func -name "*_space-${space}_*desc-brain_mask.nii.gz") bold_mask/mask.nii.gz
 fi
 
 ### T1w outputs (subject space) ###
