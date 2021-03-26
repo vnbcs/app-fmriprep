@@ -42,6 +42,9 @@ fi
 skipbidsvalidation=""
 [ "$(jq -r .skipbidsvalidation config.json)" == "true" ] && skipbidsvalidation="--skip-bids-validation"
 
+aroma=""
+[ "$(jq -r .aroma config.json)" == "true" ] && aroma="--use-aroma"
+
 #####################################################################################
 #####################################################################################
 # some logical checks
@@ -105,6 +108,7 @@ if [ ! -d $outdir/fmriprep ]; then
         --cifti-output $cifti_output_resolution \
         --force-bbr \
         --use-syn-sdc \
+        $aroma \
         $skipbidsvalidation \
         --skull-strip-template=NKI \
         --work-dir=$WORKDIRNAME \
