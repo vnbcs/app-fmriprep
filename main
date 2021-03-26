@@ -104,7 +104,7 @@ if [ ! -d $outdir/fmriprep ]; then
         --md-only-boilerplate \
         --stop-on-first-crash \
         --use-plugin=multi_proc.yml \
-        --output-spaces $output_space MNI152NLin2009cAsym \
+        --output-spaces $output_space \
         --cifti-output $cifti_output_resolution \
         --force-bbr \
         --use-syn-sdc \
