@@ -70,16 +70,24 @@ fi
 
 # if freesurfer provided, copy it to the same level as output dir
 # TODO why can't we just symlink this in?
+#if [[ $inFSDIR != "null" ]] ; then
+#
+#    #clean up previous freesurfer dir if it exists
+#    rm -rf $outdir/freesurfer
+#    mkdir -p $outdir/freesurfer
+#
+#    #TODO - strip alphanumeric chars?
+#    sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
+#    cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
+#    chmod -R +rw $outdir/freesurfer
+#fi
+
+# if freesurfer provided, copy it to the same level as output dir
 if [[ $inFSDIR != "null" ]] ; then
-
-    #clean up previous freesurfer dir if it exists
-    rm -rf $outdir/freesurfer
     mkdir -p $outdir/freesurfer
-
-    #TODO - strip alphanumeric chars?
+    #TODO don't I need to handle session?
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
-    cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
-    chmod -R +rw $outdir/freesurfer
+    ln -sf ../../$inFSDIR $outdir/freesurfer/sub-$sub
 fi
 
 # avoid templateflow problems on HPC's running singularity
