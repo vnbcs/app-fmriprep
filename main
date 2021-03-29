@@ -69,25 +69,19 @@ fi
 # setup bids dir structure
 
 # if freesurfer provided, copy it to the same level as output dir
-# TODO why can't we just symlink this in?
-#if [[ $inFSDIR != "null" ]] ; then
-#
-#    #clean up previous freesurfer dir if it exists
-#    rm -rf $outdir/freesurfer
-#    mkdir -p $outdir/freesurfer
-#
-#    #TODO - strip alphanumeric chars?
-#    sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
-#    cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
-#    chmod -R +rw $outdir/freesurfer
-#fi
-
-# if freesurfer provided, copy it to the same level as output dir
+# I ahve to copy the whole things in, because fmriprep tries to write stuff inside the freesurfer output directory 
+# (and fail with "Permission denied: '/export/prod/605d2c37750389fd17eb0118/60623689750389d3f6ec1f20/out/freesurfer/sub-9002/surf/lh.midthickness'"
+# error because it's set to read-only.
 if [[ $inFSDIR != "null" ]] ; then
+
+    #clean up previous freesurfer dir if it exists
+    rm -rf $outdir/freesurfer
     mkdir -p $outdir/freesurfer
-    #TODO don't I need to handle session?
+
+    #TODO - strip alphanumeric chars?
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
-    ln -sf ../../$inFSDIR $outdir/freesurfer/sub-$sub
+    cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
+    chmod -R +rw $outdir/freesurfer
 fi
 
 # avoid templateflow problems on HPC's running singularity
