@@ -46,7 +46,10 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
     product="\"cifti\": { \"meta\": $cifti_json }, $product"
 
 else # else its a volume(bold) output
-    product="\"bold_img\": {\"meta\": {\"space\": \"$space\"}, \"tags\": [ \"space-$space\" ]}, $product"
+
+    bold_json=$(find $oDir/func -name "*_desc-preproc_bold.json")
+    time singularity exec -e docker://brainlife/python:2.7.16 python ./merge_json.py -f1 config.json -f2 $bold_json -id_in fmri -out tmp.json
+    product="\"bold_img\": {\"meta\": $(cat tmp.json), \"space\": \"$space\", \"tags\": [ \"space-$space\" ]}, $product"
 
     # get the preproc fmri vol
     mkdir -p bold_img
@@ -69,7 +72,8 @@ ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 #anat
 ln -sf ../$(find $oDir/anat -name "*_desc-preproc_T1w.nii.gz" -not -name "*space*") anat/t1.nii.gz
 anat_json=$(find $oDir/anat -name "*_desc-preproc_T1w.json" -not -name "*space*")
-product="\"anat\": {\"meta\": $(cat $anat_json) }, $product"
+time singularity exec -e docker://brainlife/python:2.7.16 python ./merge_json.py -f1 config.json -f2 $anat_json -id_in t1w -out tmp.json
+product="\"anat\": {\"meta\": $(cat tmp.json) }, $product"
 #anat_mask
 ln -sf ../$(find $oDir/anat -name "*_desc-brain_mask.nii.gz" -not -name "*space*") anat_mask/mask.nii.gz
 anat_mask_json=$(find $oDir/anat -name "*_desc-brain_mask.json" -not -name "*space*")
@@ -103,5 +107,6 @@ cat << EOF > product.json
     ]
 }
 EOF
+
 
 
