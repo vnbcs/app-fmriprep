@@ -25,7 +25,8 @@ outdir=out
 #admin told me that it's causing high IOP
 WORKDIRNAME=work
 if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
-    WORKDIRNAME-/scratch/$USER/job_$SLURM_JOB_ID/work
+    echo "using NVMe directory"
+    WORKDIRNAME=/scratch/$USER/job_$SLURM_JOB_ID/work
 fi
 
 inT1w=`jq -r '.t1' config.json`
