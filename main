@@ -19,7 +19,12 @@ EOF
 
 #source bids_funcs.sh
 
-WORKDIRNAME=work
+WORKDIRNAME=work                                                                                   
+if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then                                                  
+    echo "using NVMe directory"                                                                     
+    WORKDIRNAME=/scratch/$USER/job_$SLURM_JOB_ID/work                                               
+fi          
+
 outdir=out
 #INDIRNAME=fmripinput
 
