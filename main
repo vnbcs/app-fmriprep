@@ -125,7 +125,9 @@ time singularity exec -e \
 echo "done with fmriprep! - now organizing output"
 ./fmriprep2bl.sh
 
-rm -r $WORKDIRNAME # save lots of space
+#for debugging https://github.com/nipreps/fmriprep/issues/2070
+#rm -r $WORKDIRNAME # save lots of space
+cp -r $WORKDIRNAME debug
 
 echo "all done"
 
