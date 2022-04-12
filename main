@@ -126,8 +126,9 @@ echo "done with fmriprep! - now organizing output"
 ./fmriprep2bl.sh
 
 #for debugging https://github.com/nipreps/fmriprep/issues/2070
-#rm -r $WORKDIRNAME # save lots of space
-cp -r $WORKDIRNAME debug
+#cp -r $WORKDIRNAME debug
+
+rm -r $WORKDIRNAME #saves scratch space/inodes
 
 echo "all done"
 
