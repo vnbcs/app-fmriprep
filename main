@@ -19,11 +19,11 @@ EOF
 
 #source bids_funcs.sh
 
-WORKDIRNAME=work                                                                                   
-if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then                                                  
-    echo "using NVMe directory"                                                                     
-    WORKDIRNAME=/scratch/$USER/job_$SLURM_JOB_ID/work                                               
-fi          
+WORKDIRNAME=work
+if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
+    echo "using NVMe directory"
+    WORKDIRNAME=/scratch/$USER/job_$SLURM_JOB_ID/work
+fi
 
 outdir=out
 #INDIRNAME=fmripinput
@@ -59,7 +59,7 @@ if [[ $inT1w = "null" ]] || [[ $inFMRI = "null" ]] ; then
 fi
 
 # extract info from brainlife interface, base on T1w
-# get the staging dir, this is where meta information is 
+# get the staging dir, this is where meta information is
 stagingDir=$(dirname $inT1w)
 echo "ls dir where initial bl info read--> $stagingDir"
 ls -dl $stagingDir
@@ -74,7 +74,7 @@ fi
 # setup bids dir structure
 
 # if freesurfer provided, copy it to the same level as output dir
-# I ahve to copy the whole things in, because fmriprep tries to write stuff inside the freesurfer output directory 
+# I ahve to copy the whole things in, because fmriprep tries to write stuff inside the freesurfer output directory
 # (and fail with "Permission denied: '/export/prod/605d2c37750389fd17eb0118/60623689750389d3f6ec1f20/out/freesurfer/sub-9002/surf/lh.midthickness'"
 # error because it's set to read-only.
 if [[ $inFSDIR != "null" ]] ; then
@@ -127,8 +127,9 @@ fi
 
 echo "done with fmriprep! - now organizing output"
 ./fmriprep2bl.sh
+singularity exec -e docker://brainlife/dipy:1.4.1 ./create_parc_json.py
+rm -rf labels.tsv
 
 rm -r $WORKDIRNAME # save lots of space
 
 echo "all done"
-
