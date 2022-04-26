@@ -26,7 +26,14 @@ if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
 fi          
 
 outdir=out
-#INDIRNAME=fmripinput
+
+#we should avoid using lustre filesystem as workdir on Expsnse@SDSC, 
+#admin told me that it's causing high IOP
+WORKDIRNAME=work
+if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
+    echo "using NVMe directory"
+    WORKDIRNAME=/scratch/$USER/job_$SLURM_JOB_ID/work
+fi
 
 inT1w=`jq -r '.t1' config.json`
 inT2w=`jq -r '.t2' config.json`
@@ -128,7 +135,10 @@ fi
 echo "done with fmriprep! - now organizing output"
 ./fmriprep2bl.sh
 
-rm -r $WORKDIRNAME # save lots of space
+#for debugging https://github.com/nipreps/fmriprep/issues/2070
+#cp -r $WORKDIRNAME debug
+
+rm -r $WORKDIRNAME #saves scratch space/inodes
 
 echo "all done"
 
