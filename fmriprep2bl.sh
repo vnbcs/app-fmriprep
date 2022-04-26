@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################################################
-# reogranize fmriprep outputs for brainlife 
+# reogranize fmriprep outputs for brainlife
 #####################################################################################
 
 set -x
@@ -39,7 +39,7 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
         ./convertsurf.sh out/freesurfer/sub-$sub/surf
     product="\"surface-vertices\": { \"meta\": { \"space\": \"$space\" }, \"tags\": [ \"space-$space\"] }, $product"
 
-    # cifti output 
+    # cifti output
     mkdir -p cifti
     ln -sf ../$(find $oDir/func -name "*_bold.dtseries.nii") cifti/cifti.nii
     cifti_json=$(cat $oDir/func/*_bold.dtseries.json)
@@ -91,7 +91,21 @@ for dir in $(cd $outdir && find ./ -name "figures"); do
     cp -r $outdir/$dir output_report/$(dirname $dir)
 done
 #rename the parent directory to confirm to brainlife html output
-mv output_report/fmriprep output_report/html 
+mv output_report/fmriprep output_report/html
+
+### aparcaseg parcellation datatype
+mkdir -p parcellation
+labelsTsv=$outdir/fmriprep/desc-aparcaseg_dseg.tsv
+cp ${labelsTsv} ./labels.tsv
+oDir=$outdir/fmriprep/sub-$sub
+ln -sf ../$(find $oDir/anat -name "*_desc-aparcaseg_dseg.nii.gz" -not -name "*space*") parcellation/parc.nii.gz
+
+### transform/h5 datatype
+mkdir -p transform
+oDir=$outdir/fmriprep/sub-$sub
+ln -sf ../$(find $oDir/anat -name "*_from-T1w_to-${space}_mode-image_xfm.h5") transform/warp.h5
+ln -sf ../$(find $oDir/anat -name "*_from-${space}_to-T1w_mode-image_xfm.h5") transform/inverse-warp.h5
+ln -sf ../$(find $oDir/anat -name "*_from-T1w_to-*mode-image_xfm.txt") transform/affine.txt
 
 ### write out product.json
 cat << EOF > product.json
@@ -107,6 +121,3 @@ cat << EOF > product.json
     ]
 }
 EOF
-
-
-
