@@ -22,6 +22,12 @@ regressors_tsv=$(find $oDir/func -name "*_desc-confounds_timeseries.tsv")
 regressors_json=$(find $oDir/func -name "*_desc-confounds_timeseries.json")
 [[ -f $regressors_json ]] && cp $regressors_json regress/regressors.json
 
+# ADDITION vvvv
+mkdir -p aroma_ic
+aroma_csv=$(find $oDir/func -name "*AROMAnoiseICs.csv")
+[[ -f $aroma_csv ]] && cp $aroma_csv aroma_ic/aroma_csv
+# ADDITION ^^^^
+
 # need to check if we have surface or volume output,
 # this will match for fsaverage, fsaverage5, ...
 space=$(jq -r .space config.json)
@@ -47,14 +53,20 @@ if [[ $space =~ 'fsaverage' ]] || [[ $space == 'fsnative' ]] ; then
 
 else # else its a volume(bold) output
 
-    bold_json=$(find $oDir/func -name "*_desc-preproc_bold.json")
+    # CHANGE HERE vvvv
+    # bold_json=$(find $oDir/func -name "*_desc-preproc_bold.json")
+    bold_json=$(find $oDir/func -name "*_desc-smoothAROMAnonaggr_bold.json")
+    # CHANGE HERE ^^^^
     time singularity exec -e docker://brainlife/python:2.7.16 python ./merge_json.py -f1 config.json -f2 $bold_json -id_in fmri -out tmp.json
     product="\"bold_img\": {\"meta\": $(cat tmp.json), \"space\": \"$space\", \"tags\": [ \"space-$space\" ]}, $product"
 
     # get the preproc fmri vol
     mkdir -p bold_img
-    #sub-A00008326_ses-DS2_task-rest_acq-645_space-MNI152NLin6Asym_res-2_desc-preproc_bold.nii.gz
-    ln -sf ../$(find $oDir/func -name "*_space-${space}_*desc-preproc_bold.nii.gz") bold_img/bold.nii.gz
+
+    # CHANGE HERE vvvv
+    # ln -sf ../$(find $oDir/func -name "*_space-${space}_*desc-preproc_bold.nii.gz") bold_img/bold.nii.gz
+    ln -sf ../$(find $oDir/func -name "*_space-${space}_*desc-smoothAROMAnonaggr_bold.nii.gz") bold_img/bold.nii.gz
+    # CHANGE HERE ^^^^
 
     # get the preproc fmri volmask
     mkdir -p bold_mask
