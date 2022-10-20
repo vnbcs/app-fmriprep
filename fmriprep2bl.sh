@@ -23,8 +23,9 @@ regressors_json=$(find $oDir/func -name "*_desc-confounds_timeseries.json")
 [[ -f $regressors_json ]] && cp $regressors_json regress/regressors.json
 
 # ADDITION vvvv
+mkdir -p aroma
 aroma_csv=$(find $oDir/func -name "*AROMAnoiseICs.csv")
-[[ -f $aroma_csv ]] && cp $aroma_csv regress/aroma.csv
+[[ -f $aroma_csv ]] && cp $aroma_csv aroma/aroma.csv
 # ADDITION ^^^^
 
 # need to check if we have surface or volume output,
