@@ -19,7 +19,7 @@ EOF
 
 #source bids_funcs.sh
 
-=======
+# ======= # this threw an error so i'm taking it out -e.b.
 WORKDIRNAME=work
 if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
     echo "using NVMe directory"
@@ -28,7 +28,7 @@ fi
 
 outdir=out
 
-#we should avoid using lustre filesystem as workdir on Expsnse@SDSC, 
+#we should avoid using lustre filesystem as workdir on Expsnse@SDSC,
 #admin told me that it's causing high IOP
 WORKDIRNAME=work
 if [ -d "/scratch/$USER/job_$SLURM_JOB_ID" ]; then
