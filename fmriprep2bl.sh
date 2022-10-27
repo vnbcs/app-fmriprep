@@ -12,7 +12,8 @@ product=""
 
 # get basename for fmri output
 sub=$(jq -r '._inputs[] | select(.id == "fmri") | .meta.subject' config.json)
-oDir=$outdir/fmriprep/sub-$sub
+# oDir=$outdir/fmriprep/sub-$sub
+oDir=$outdir/sub-$sub
 ses=$(jq -r '._inputs[] | select(.id == "fmri") | .meta.session' config.json)
 [ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 
@@ -78,7 +79,8 @@ fi
 # TODO - should we output all output spaces?
 mkdir -p anat anat_mask
 sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
-oDir=$outdir/fmriprep/sub-$sub
+# oDir=$outdir/fmriprep/sub-$sub
+oDir=$outdir/sub-$sub
 ses=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.session' config.json)
 [ "$ses" != "null" ] && oDir=$oDir/ses-$ses
 #anat
