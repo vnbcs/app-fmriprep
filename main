@@ -95,7 +95,7 @@ if [[ $inFSDIR != "null" ]] ; then
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
     cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
     chmod -R +rw $outdir/freesurfer
-    fs_dir_line='--fs_subjects_dir=$outdir/freesurfer'
+    fs_dir_line=$(eval "echo --fs_subjects_dir \${outdir}/freesurfer")
 else
     fs_dir_line=''
 fi
