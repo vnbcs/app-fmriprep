@@ -95,6 +95,9 @@ if [[ $inFSDIR != "null" ]] ; then
     sub=$(jq -r '._inputs[] | select(.id == "t1w") | .meta.subject' config.json)
     cp -rH $inFSDIR $outdir/freesurfer/sub-$sub
     chmod -R +rw $outdir/freesurfer
+    fs_dir_line=$(eval "echo --fs-subjects-dir \${outdir}/freesurfer")
+else
+    fs_dir_line=''
 fi
 
 # avoid templateflow problems on HPC's running singularity
@@ -124,6 +127,7 @@ time singularity exec -e \
     --use-syn-sdc \
     $aroma \
     $skipbidsvalidation \
+    $fs_dir_line \
     --skull-strip-template=NKI \
     --work-dir=$WORKDIRNAME \
     --fs-license-file=license.txt \
