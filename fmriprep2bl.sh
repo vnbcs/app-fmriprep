@@ -105,7 +105,8 @@ for dir in $(cd $outdir && find ./ -name "figures"); do
     cp -r $outdir/$dir output_report/$(dirname $dir)
 done
 #rename the parent directory to confirm to brainlife html output
-mv output_report/fmriprep output_report/html
+# mv output_report/fmriprep output_report/html # this line is throwing error - e.b.
+mv output_report output_report/html
 
 ### aparcaseg parcellation datatype
 mkdir -p parcellation
