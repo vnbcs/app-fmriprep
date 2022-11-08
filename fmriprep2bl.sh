@@ -110,7 +110,7 @@ done
 
 ### aparcaseg parcellation datatype
 mkdir -p parcellation
-labelsTsv=$outdir/fmriprep/desc-aparcaseg_dseg.tsv
+labelsTsv=$outdir/desc-aparcaseg_dseg.tsv
 cp ${labelsTsv} ./labels.tsv
 #oDir=$outdir/fmriprep/sub-$sub
 ln -sf ../$(find $oDir/anat -name "*_desc-aparcaseg_dseg.nii.gz" -not -name "*space*") parcellation/parc.nii.gz
